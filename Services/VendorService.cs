@@ -88,5 +88,72 @@ namespace JwtAuthentication_Relations_Authorization.Services
                 throw new Exception("User Already Found");
             }
         }
+
+        public List<vendorResponse> GetAllVendorRecord()
+        {
+            var vendors = _JwtAuthentication.Vendors.ToList();
+            if(vendors.Count <= 0)
+            {
+                throw new Exception("User Not Found");
+            }
+            else
+            {
+                List<vendorResponse> vendorList = _JwtAuthentication.Vendors
+                .Include(v => v.user)
+                .ThenInclude(u => u.Role)
+                .Select(vendor => new vendorResponse
+                {
+                    NoOFDrivers = vendor.NoOFDrivers,
+                    NoOfVehicles = vendor.NoOfVehicles,
+                    VendorAdress = vendor.VendorAdress,
+                    ServiceArea = vendor.ServiceArea,
+                    Latitude = vendor.Latitude,
+                    Longitude = vendor.Longitude,
+                    userResponce = new UserResponce
+                    {
+                        Name = vendor.user.Name,
+                        Email = vendor.user.Email,
+                        Country = vendor.user.Country,
+                        PassCode = vendor.user.PassCode,
+                        Role = new RoleResponse
+                        {
+                            Id = vendor.user.RoleID,
+                            Name = vendor.user.Role.Name
+                        }
+                    }
+                })
+                .ToList();
+                return vendorList;
+            }
+        }
+
+        public vendorResponse UpdateVendorRecord(VendorBodyRequest vendorBodyRequest ,int id)
+        {
+            var vendor = _JwtAuthentication.Vendors.FirstOrDefault(v => v.user.Email == vendorBodyRequest.Email);
+            if (vendor == null)
+            {
+                throw new Exception(" Vendor Not Found ");
+            }
+            else
+            {
+                _JwtAuthentication.Vendors.Update(vendor);
+                var Entry = _JwtAuthentication.SaveChanges();
+                if(Entry > 0)
+                {
+                    var Response = new vendorResponse
+                    {
+                        NoOFDrivers = vendor.NoOFDrivers,
+                        NoOfVehicles = vendor.NoOfVehicles,
+                        VendorAdress = vendor.VendorAdress,
+                        ServiceArea = vendor.ServiceArea,
+                    };
+                    return Response;
+                }
+                else
+                {
+                    throw new Exception("User Not Save Something Went Wrong");
+                }
+            }
+        }
     }
 }

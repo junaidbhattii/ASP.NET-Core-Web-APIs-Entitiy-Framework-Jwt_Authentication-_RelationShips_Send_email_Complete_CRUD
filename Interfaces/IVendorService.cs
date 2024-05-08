@@ -6,5 +6,7 @@ namespace JwtAuthentication_Relations_Authorization.Interfaces
     public interface IVendorService
     {
         public vendorResponse VendorRegistration(VendorBodyRequest vendorBodyRequest);
+        public List<vendorResponse> GetAllVendorRecord();
+        public vendorResponse UpdateVendorRecord(VendorBodyRequest vendorBodyRequest ,int id);
     }
 }

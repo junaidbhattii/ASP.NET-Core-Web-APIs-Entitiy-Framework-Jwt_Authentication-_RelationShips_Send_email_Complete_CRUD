@@ -35,6 +35,7 @@ builder.Services.AddTransient<IEmployeeService ,EmployeeService>();
 builder.Services.AddTransient<IUserService ,UserService>();
 builder.Services.AddTransient<IEmailSendService , EmailSendService>();
 builder.Services.AddTransient<IVendorService , VendorService>();
+builder.Services.AddScoped<IAdminService , AdminService>();
 builder.Services.AddHttpClient<LatitudeLongitude>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

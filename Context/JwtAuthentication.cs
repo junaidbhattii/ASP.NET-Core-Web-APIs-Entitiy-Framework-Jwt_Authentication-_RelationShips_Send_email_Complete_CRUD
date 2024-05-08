@@ -11,6 +11,8 @@ namespace JwtAuthentication_Relations_Authorization.Context
         public DbSet<Role> Roles { get; set; }
         public DbSet<Employee> Employees { get; set; }  
         public DbSet<Vendor> Vendors { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

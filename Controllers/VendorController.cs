@@ -21,5 +21,17 @@ namespace JwtAuthentication_Relations_Authorization.Controllers
             var Record = _vendorService.VendorRegistration(vendorBodyRequest);
             return Record;
         }
+        [HttpGet]
+        public List<vendorResponse> GetAllVendords()
+        {
+            var VendorsResults = _vendorService.GetAllVendorRecord();
+            return VendorsResults;
+        }
+        [HttpPut]
+        public vendorResponse UpdateVendor(VendorBodyRequest vendorBodyRequest , int id)
+        {
+            var VendorResult = _vendorService.UpdateVendorRecord(vendorBodyRequest, id);
+            return VendorResult;
+        }
     }
 }

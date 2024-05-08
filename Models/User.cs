@@ -11,7 +11,7 @@
         public int RoleID { get; set; }
         public Role Role { get; set; }
         public Vendor vendor { get; set; }
-
+        public Admin admin { get; set; }
 
     }
 }
