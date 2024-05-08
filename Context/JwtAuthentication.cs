@@ -10,5 +10,15 @@ namespace JwtAuthentication_Relations_Authorization.Context
         public DbSet<User> Users { get; set; }  
         public DbSet<Role> Roles { get; set; }
         public DbSet<Employee> Employees { get; set; }  
+        public DbSet<Vendor> Vendors { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.vendor)
+                .WithOne(v => v.user)
+                .HasForeignKey<Vendor>(v => v.UserId);
+        }
+
     }
 }

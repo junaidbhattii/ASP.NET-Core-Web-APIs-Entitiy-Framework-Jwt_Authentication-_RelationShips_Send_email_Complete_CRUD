@@ -28,11 +28,14 @@ builder.Services.AddAuthentication(Options => {
     };
 });
 
+
 builder.Services.AddControllers();
 builder.Services.AddSingleton<JWT>();
 builder.Services.AddTransient<IEmployeeService ,EmployeeService>();
 builder.Services.AddTransient<IUserService ,UserService>();
 builder.Services.AddTransient<IEmailSendService , EmailSendService>();
+builder.Services.AddTransient<IVendorService , VendorService>();
+builder.Services.AddHttpClient<LatitudeLongitude>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

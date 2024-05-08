@@ -39,6 +39,7 @@ namespace JwtAuthentication_Relations_Authorization.Services
                         Role = new RoleResponse
                         {
                             Id = Request.Id,
+                            Name = _JwtAuthentication.Roles.FirstOrDefault(u => u.Id == Request.RoleID)?.Name,
                         }
                     };
                     return Response;
