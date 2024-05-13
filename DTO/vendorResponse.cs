@@ -8,6 +8,6 @@
         public string ServiceArea { get; set; }
         public string Latitude { get; set; }
         public string Longitude { get; set; }
-        public UserResponce userResponce { get; set; }
+        public UserResponce user { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace JwtAuthentication_Relations_Authorization.Controllers
             _vendorService = vendorService;
         }
         [HttpPost]
-        public vendorResponse VendorRegister(VendorBodyRequest vendorBodyRequest)
+        public Task<vendorResponse> VendorRegister(VendorBodyRequest vendorBodyRequest)
         {
             var Record = _vendorService.VendorRegistration(vendorBodyRequest);
             return Record;

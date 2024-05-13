@@ -1,4 +1,5 @@
-﻿using JwtAuthentication_Relations_Authorization.Context;
+﻿using AutoMapper;
+using JwtAuthentication_Relations_Authorization.Context;
 using JwtAuthentication_Relations_Authorization.DTO;
 using JwtAuthentication_Relations_Authorization.Interfaces;
 using JwtAuthentication_Relations_Authorization.Models;
@@ -11,65 +12,82 @@ namespace JwtAuthentication_Relations_Authorization.Services
     {
         private readonly JwtAuthentication _JwtAuthentication;
         private readonly LatitudeLongitude _LatitudeLongitude;
-        public VendorService(JwtAuthentication jwtAuthentication , LatitudeLongitude latitudeLongitude)
+        private readonly IMapper _mapper;
+        public VendorService(JwtAuthentication jwtAuthentication , LatitudeLongitude latitudeLongitude , IMapper mapper)
         {
             _JwtAuthentication = jwtAuthentication;
             _LatitudeLongitude = latitudeLongitude;
+            _mapper = mapper;
         }
-        public vendorResponse VendorRegistration(VendorBodyRequest vendorBodyRequest)
+        public async Task<vendorResponse> VendorRegistration(VendorBodyRequest vendorBodyRequest)
         {
-            var vendor = _JwtAuthentication.Users.FirstOrDefault(u => u.Email == vendorBodyRequest.Email);
+            var vendor = await _JwtAuthentication.Users.FirstOrDefaultAsync(u => u.Email == vendorBodyRequest.Email);
             if (vendor == null)
             {
-                var userRecord = new User
-                {
-                    Email = vendorBodyRequest.Email,
-                    Password = BCrypt.Net.BCrypt.HashPassword( vendorBodyRequest.Password ),
-                    Name = vendorBodyRequest.Name,  
-                    Country = vendorBodyRequest.VendorAdress,
-                    RoleID = 2,
-                };
-                _JwtAuthentication.Users.Add(userRecord);
-                var Entry = _JwtAuthentication.SaveChanges();
-                var RESULTLAT = _LatitudeLongitude.GetCoordinatesFromAddress(userRecord.Country);
+                //var userRecord = new User
+                //{
+                //    Email = vendorBodyRequest.Email,
+                //    Password = BCrypt.Net.BCrypt.HashPassword( vendorBodyRequest.Password ),
+                //    Name = vendorBodyRequest.Name,  
+                //    Country = vendorBodyRequest.VendorAdress,
+                //    RoleID = 2,
+                //};
+                var user = _mapper.Map<User>(vendorBodyRequest);
+                user.Country = vendorBodyRequest.VendorAdress;
+                user.RoleID = 2;
+                 await _JwtAuthentication.Users.AddAsync(user);
+                var RESULTLAT = _LatitudeLongitude.GetCoordinatesFromAddress(user.Country);
+                var Entry = await _JwtAuthentication.SaveChangesAsync();
                 if(Entry > 0)
                 {
-                    var vendorRecord = new Vendor
-                    {
-                        NoOFDrivers = vendorBodyRequest.NoOFDrivers,
-                        NoOfVehicles = vendorBodyRequest.NoOfVehicles,
-                        ServiceArea = vendorBodyRequest.ServiceArea,
-                        VendorAdress = vendorBodyRequest.VendorAdress,
-                        UserId = userRecord.Id,
-                        Latitude = RESULTLAT.Result.Latitude,
-                        Longitude = RESULTLAT.Result.Longitude,
-                    };
-
-                    _JwtAuthentication.Vendors.Add(vendorRecord);
-                    var EntryVendor = _JwtAuthentication.SaveChanges();
+                    //var vendorRecord = new Vendor
+                    //{
+                    //    NoOFDrivers = vendorBodyRequest.NoOFDrivers,
+                    //    NoOfVehicles = vendorBodyRequest.NoOfVehicles,
+                    //    ServiceArea = vendorBodyRequest.ServiceArea,
+                    //    VendorAdress = vendorBodyRequest.VendorAdress,
+                    //    UserId = user.Id,
+                    //    Latitude = RESULTLAT.Result.Latitude,
+                    //    Longitude = RESULTLAT.Result.Longitude,
+                    //};
+                    var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
+                    vendorRecord.UserId = user.Id;
+                    vendorRecord.Latitude = RESULTLAT.Result.Latitude;
+                    vendorRecord.Longitude = RESULTLAT.Result.Longitude;
+                    await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
+                    var EntryVendor = await _JwtAuthentication.SaveChangesAsync();
                     if(EntryVendor > 0)
                     {
-                        var Response = new vendorResponse
-                        {
-                            NoOFDrivers = vendorRecord.NoOFDrivers,
-                            NoOfVehicles = vendorRecord.NoOfVehicles,
-                            VendorAdress = vendorRecord.VendorAdress,
-                            ServiceArea = vendorRecord.ServiceArea,
-                            Latitude = vendorRecord.Latitude,
-                            Longitude = vendorRecord.Longitude,
+                        //var Response = new vendorResponse
+                        //{
+                        //    NoOFDrivers = vendorRecord.NoOFDrivers,
+                        //    NoOfVehicles = vendorRecord.NoOfVehicles,
+                        //    VendorAdress = vendorRecord.VendorAdress,
+                        //    ServiceArea = vendorRecord.ServiceArea,
+                        //    Latitude = vendorRecord.Latitude,
+                        //    Longitude = vendorRecord.Longitude,
 
-                            userResponce = new UserResponce
-                            {
-                                Email = userRecord.Email,
-                                Name = userRecord.Name,
-                                Country = userRecord.Country,
-                                Role = new RoleResponse
-                                {
-                                    Id = userRecord.RoleID,
-                                    Name = _JwtAuthentication.Roles.FirstOrDefault(r => r.Id == userRecord.RoleID)?.Name
-                                }
-                            }
-                        };
+                        //    userResponce = new UserResponce
+                        //    {
+                        //        Email = user.Email,
+                        //        Name = user.Name,
+                        //        Country = user.Country,
+                        //        Role = new RoleResponse
+                        //        {
+                        //            Id = user.RoleID,
+                        //            Name = _JwtAuthentication.Roles.FirstOrDefault(r => r.Id == user.RoleID)?.Name
+                        //        }
+                        //    }
+                        //};
+                        var Response = _mapper.Map< vendorResponse>(vendorRecord);
+
+
+                        var role = _JwtAuthentication.Roles.Find(user.RoleID);
+                       
+                        
+                        var roleresponse = _mapper.Map<RoleResponse>(role);
+                        Response.user.Role = roleresponse;
+
                         return Response;
                     }
                     else
@@ -109,7 +127,7 @@ namespace JwtAuthentication_Relations_Authorization.Services
                     ServiceArea = vendor.ServiceArea,
                     Latitude = vendor.Latitude,
                     Longitude = vendor.Longitude,
-                    userResponce = new UserResponce
+                    user  = new UserResponce
                     {
                         Name = vendor.user.Name,
                         Email = vendor.user.Email,
