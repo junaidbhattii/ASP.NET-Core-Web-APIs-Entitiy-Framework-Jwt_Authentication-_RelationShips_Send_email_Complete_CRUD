@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtAuthentication&Relations&Authorization", "JwtAuthentication&Relations&Authorization.csproj", "{09986CAB-9834-4897-B8E2-2EDD5E26E810}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtAuthentication&Relations&Authorization", "JwtAuthentication&Relations&Authorization.csproj", "{09986CAB-9834-4897-B8E2-2EDD5E26E810}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWholeProject.Test", "..\TestWholeProject.Test\TestWholeProject.Test.csproj", "{2D0E8D68-B22B-434C-9813-51A84BC7D044}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{09986CAB-9834-4897-B8E2-2EDD5E26E810}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09986CAB-9834-4897-B8E2-2EDD5E26E810}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09986CAB-9834-4897-B8E2-2EDD5E26E810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D0E8D68-B22B-434C-9813-51A84BC7D044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D0E8D68-B22B-434C-9813-51A84BC7D044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D0E8D68-B22B-434C-9813-51A84BC7D044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D0E8D68-B22B-434C-9813-51A84BC7D044}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

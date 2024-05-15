@@ -33,6 +33,7 @@ namespace JwtAuthentication_Relations_Authorization.Services
                 //    RoleID = 2,
                 //};
                 var user = _mapper.Map<User>(vendorBodyRequest);
+                user.Password = BCrypt.Net.BCrypt.HashPassword(vendorBodyRequest.Password);
                 user.Country = vendorBodyRequest.VendorAdress;
                 user.RoleID = 2;
                  await _JwtAuthentication.Users.AddAsync(user);

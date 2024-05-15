@@ -95,7 +95,7 @@ namespace JwtAuthentication_Relations_Authorization.Services
                         AdminEmail = admin.AdminEmail,
                         AdminName = admin.AdminName,
                         userResponce = new UserResponce
-                        {
+                        {   
                             Email =admin.user.Email,
                             Name = admin.user.Name,
                             Country = admin.user.Country,
