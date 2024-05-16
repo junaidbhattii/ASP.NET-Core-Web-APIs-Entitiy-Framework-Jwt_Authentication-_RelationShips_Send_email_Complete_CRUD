@@ -35,67 +35,43 @@ namespace JwtAuthentication_Relations_Authorization.Services
                         await _JwtAuthentication.Users.AddAsync(user);
                         var RESULTLAT = _LatitudeLongitude.GetCoordinatesFromAddress(user.Country);
                         var Entry = await _JwtAuthentication.SaveChangesAsync();
-                        Transection.Commit();
-                        if (Entry > 0)
+                        if(Entry > 0)
                         {
-                            using(var Transection2 =  await _JwtAuthentication.Database.BeginTransactionAsync())
+                        var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
+                        //vendorRecord.UserId = user.Id;
+                        vendorRecord.Latitude = RESULTLAT.Result.Latitude;
+                        vendorRecord.Longitude = RESULTLAT.Result.Longitude;
+                        await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
+                        var EntryVendor = await _JwtAuthentication.SaveChangesAsync();
+                        Transection.Commit();
+                            if(EntryVendor > 0)
                             {
-                                try
-                                {
-                                    var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
-                                    vendorRecord.UserId = user.Id;
-                                    vendorRecord.Latitude = RESULTLAT.Result.Latitude;
-                                    vendorRecord.Longitude = RESULTLAT.Result.Longitude;
-                                    await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
-                                    var EntryVendor = await _JwtAuthentication.SaveChangesAsync();
-                                    Transection2.Commit();
-                                    if (EntryVendor > 0)
-                                    {
-                                        using ( var Transection3 =  await _JwtAuthentication.Database.BeginTransactionAsync())
-                                        {
-                                            try
-                                            {
-                                                var Response = _mapper.Map<vendorResponse>(vendorRecord);
+                                var Response = _mapper.Map<vendorResponse>(vendorRecord);
 
 
-                                                var role = _JwtAuthentication.Roles.Find(user.RoleID);
+                                var role = _JwtAuthentication.Roles.Find(user.RoleID);
 
 
-                                                var roleresponse = _mapper.Map<RoleResponse>(role);
-                                                Response.user.Role = roleresponse;
+                                var roleresponse = _mapper.Map<RoleResponse>(role);
+                                Response.user.Role = roleresponse;
 
-                                                return Response;
-                                            }
-                                            catch(Exception)
-                                            {
-                                                Transection3.Rollback();
-                                                throw;
-                                            }
-                                        }
-                                        
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("Vendor Record Not Save");
-                                    }
-                                }
-                                catch(Exception)
-                                {
-                                    Transection2.Rollback();
-                                    throw;
-                                }
+                                return Response;
+
                             }
-                            
-
+                            else
+                            {
+                                throw new Exception("Vendor Not Save");
+                            }
                         }
                         else
                         {
-                            throw new Exception("User Record Not Save");
+                            throw new Exception("User Not Save");
                         }
+
                     }
                     else
                     {
-                        throw new Exception("User Already Exist");
+                        throw new Exception ("User Already Exist");
                     }
                 }
                 catch (Exception)
