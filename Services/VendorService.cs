@@ -21,91 +21,90 @@ namespace JwtAuthentication_Relations_Authorization.Services
         }
         public async Task<vendorResponse> VendorRegistration(VendorBodyRequest vendorBodyRequest)
         {
-            var vendor = await _JwtAuthentication.Users.FirstOrDefaultAsync(u => u.Email == vendorBodyRequest.Email);
-            if (vendor == null)
+            using (var Transection = await _JwtAuthentication.Database.BeginTransactionAsync())
             {
-                //var userRecord = new User
-                //{
-                //    Email = vendorBodyRequest.Email,
-                //    Password = BCrypt.Net.BCrypt.HashPassword( vendorBodyRequest.Password ),
-                //    Name = vendorBodyRequest.Name,  
-                //    Country = vendorBodyRequest.VendorAdress,
-                //    RoleID = 2,
-                //};
-                var user = _mapper.Map<User>(vendorBodyRequest);
-                user.Password = BCrypt.Net.BCrypt.HashPassword(vendorBodyRequest.Password);
-                user.Country = vendorBodyRequest.VendorAdress;
-                user.RoleID = 2;
-                 await _JwtAuthentication.Users.AddAsync(user);
-                var RESULTLAT = _LatitudeLongitude.GetCoordinatesFromAddress(user.Country);
-                var Entry = await _JwtAuthentication.SaveChangesAsync();
-                if(Entry > 0)
+                try
                 {
-                    //var vendorRecord = new Vendor
-                    //{
-                    //    NoOFDrivers = vendorBodyRequest.NoOFDrivers,
-                    //    NoOfVehicles = vendorBodyRequest.NoOfVehicles,
-                    //    ServiceArea = vendorBodyRequest.ServiceArea,
-                    //    VendorAdress = vendorBodyRequest.VendorAdress,
-                    //    UserId = user.Id,
-                    //    Latitude = RESULTLAT.Result.Latitude,
-                    //    Longitude = RESULTLAT.Result.Longitude,
-                    //};
-                    var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
-                    vendorRecord.UserId = user.Id;
-                    vendorRecord.Latitude = RESULTLAT.Result.Latitude;
-                    vendorRecord.Longitude = RESULTLAT.Result.Longitude;
-                    await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
-                    var EntryVendor = await _JwtAuthentication.SaveChangesAsync();
-                    if(EntryVendor > 0)
+                    var vendor = await _JwtAuthentication.Users.FirstOrDefaultAsync(u => u.Email == vendorBodyRequest.Email);
+                    if (vendor == null)
                     {
-                        //var Response = new vendorResponse
-                        //{
-                        //    NoOFDrivers = vendorRecord.NoOFDrivers,
-                        //    NoOfVehicles = vendorRecord.NoOfVehicles,
-                        //    VendorAdress = vendorRecord.VendorAdress,
-                        //    ServiceArea = vendorRecord.ServiceArea,
-                        //    Latitude = vendorRecord.Latitude,
-                        //    Longitude = vendorRecord.Longitude,
+                        var user = _mapper.Map<User>(vendorBodyRequest);
+                        user.Password = BCrypt.Net.BCrypt.HashPassword(vendorBodyRequest.Password);
+                        user.Country = vendorBodyRequest.VendorAdress;
+                        user.RoleID = 2;
+                        await _JwtAuthentication.Users.AddAsync(user);
+                        var RESULTLAT = _LatitudeLongitude.GetCoordinatesFromAddress(user.Country);
+                        var Entry = await _JwtAuthentication.SaveChangesAsync();
+                        Transection.Commit();
+                        if (Entry > 0)
+                        {
+                            using(var Transection2 =  await _JwtAuthentication.Database.BeginTransactionAsync())
+                            {
+                                try
+                                {
+                                    var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
+                                    vendorRecord.UserId = user.Id;
+                                    vendorRecord.Latitude = RESULTLAT.Result.Latitude;
+                                    vendorRecord.Longitude = RESULTLAT.Result.Longitude;
+                                    await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
+                                    var EntryVendor = await _JwtAuthentication.SaveChangesAsync();
+                                    Transection2.Commit();
+                                    if (EntryVendor > 0)
+                                    {
+                                        using ( var Transection3 =  await _JwtAuthentication.Database.BeginTransactionAsync())
+                                        {
+                                            try
+                                            {
+                                                var Response = _mapper.Map<vendorResponse>(vendorRecord);
 
-                        //    userResponce = new UserResponce
-                        //    {
-                        //        Email = user.Email,
-                        //        Name = user.Name,
-                        //        Country = user.Country,
-                        //        Role = new RoleResponse
-                        //        {
-                        //            Id = user.RoleID,
-                        //            Name = _JwtAuthentication.Roles.FirstOrDefault(r => r.Id == user.RoleID)?.Name
-                        //        }
-                        //    }
-                        //};
-                        var Response = _mapper.Map< vendorResponse>(vendorRecord);
+
+                                                var role = _JwtAuthentication.Roles.Find(user.RoleID);
 
 
-                        var role = _JwtAuthentication.Roles.Find(user.RoleID);
-                       
-                        
-                        var roleresponse = _mapper.Map<RoleResponse>(role);
-                        Response.user.Role = roleresponse;
+                                                var roleresponse = _mapper.Map<RoleResponse>(role);
+                                                Response.user.Role = roleresponse;
 
-                        return Response;
+                                                return Response;
+                                            }
+                                            catch(Exception)
+                                            {
+                                                Transection3.Rollback();
+                                                throw;
+                                            }
+                                        }
+                                        
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Vendor Record Not Save");
+                                    }
+                                }
+                                catch(Exception)
+                                {
+                                    Transection2.Rollback();
+                                    throw;
+                                }
+                            }
+                            
+
+                        }
+                        else
+                        {
+                            throw new Exception("User Record Not Save");
+                        }
                     }
                     else
                     {
-                        throw new Exception("Vendor Record Not Save");
+                        throw new Exception("User Already Exist");
                     }
-
                 }
-                else
+                catch (Exception)
                 {
-                    throw new Exception("User Record Not Save");
+                    Transection.Rollback();
+                    throw;
                 }
             }
-            else
-            {
-                throw new Exception("User Already Found");
-            }
+            
         }
 
         public List<vendorResponse> GetAllVendorRecord()
