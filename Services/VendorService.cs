@@ -38,7 +38,7 @@ namespace JwtAuthentication_Relations_Authorization.Services
                         if(Entry > 0)
                         {
                         var vendorRecord = _mapper.Map<Vendor>(vendorBodyRequest);
-                        //vendorRecord.UserId = user.Id;
+                        vendorRecord.UserId = user.Id;
                         vendorRecord.Latitude = RESULTLAT.Result.Latitude;
                         vendorRecord.Longitude = RESULTLAT.Result.Longitude;
                         await _JwtAuthentication.Vendors.AddAsync(vendorRecord);
